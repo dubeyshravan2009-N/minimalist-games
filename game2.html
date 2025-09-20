@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game 2 - Minimalist Games</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Game 2: Avoid the Box!</h1>
+  </header>
+
+  <main>
+    <canvas id="gameCanvas" width="300" height="400" style="border:1px solid #333;"></canvas>
+    <p>Score: <span id="score">0</span></p>
+    <br>
+    <a href="index.html">← Back to Home</a>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let score = 0;
+    let player = {x: 140, y: 350, w: 20, h: 20};
+    let obstacle = {x: Math.random()*280, y: 0, w: 20, h: 20};
+    
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      
+      // Player
+      ctx.fillStyle = 'blue';
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+      
+      // Obstacle
+      ctx.fillStyle = 'red';
+      ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+    }
+
+    function update() {
+      obstacle.y += 3;
+      if(obstacle.y > canvas.height){
+        obstacle.y = 0;
+        obstacle.x = Math.random()*280;
+        score++;
+        document.getElementById('score').textContent = score;
+      }
+
+      // Collision
+      if(obstacle.x < player.x + player.w &&
+         obstacle.x + obstacle.w > player.x &&
+         obstacle.y < player.y + player.h &&
+         obstacle.y + obstacle.h > player.y){
+           alert('Game Over! Score: ' + score);
+           score = 0;
+           obstacle.y = 0;
+           obstacle.x = Math.random()*280;
+           document.getElementById('score').textContent = score;
+         }
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    document.addEventListener('keydown', e=>{
+      if(e.key==='ArrowLeft' && player.x>0) player.x -= 20;
+      if(e.key==='ArrowRight' && player.x<canvas.width-player.w) player.x += 20;
+    });
+
+    update();
+  </script>
+</body>
+</html>
+
