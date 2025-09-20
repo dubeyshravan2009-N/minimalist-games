@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game 5 - Reaction Click</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { text-align: center; font-family: 'Inter', sans-serif; background: #f0f2f5; }
+    #gameArea {
+      width: 250px;
+      height: 250px;
+      margin: 50px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: white;
+      border-radius: 20px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    #scoreText {
+      font-size: 1.5rem;
+      margin-top: 20px;
+    }
+    .home-link {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #1e1e2f;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .home-link:hover { color: #2575fc; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Game 5: Reaction Click!</h1>
+  </header>
+
+  <main>
+    <div id="gameArea">Wait...</div>
+    <p id="scoreText">Score: 0</p>
+    <a href="index.html" class="home-link">🏠 Back to Home</a>
+  </main>
+
+  <script>
+    const gameArea = document.getElementById('gameArea');
+    const scoreText = document.getElementById('scoreText');
+    let waiting = true;
+    let score = 0;
+    let timeout;
+
+    function startGame() {
+      gameArea.textContent = 'Wait...';
+      gameArea.style.background = '#555';
+      waiting = true;
+      const randomTime = 1000 + Math.random() * 3000; // 1-4 seconds
+      timeout = setTimeout(() => {
+        gameArea.textContent = 'Click!';
+        gameArea.style.background = '#4CAF50';
+        waiting = false;
+      }, randomTime);
+    }
+
+    gameArea.addEventListener('click', () => {
+      if(waiting) {
+        // Clicked too early
+        clearTimeout(timeout);
+        gameArea.textContent = 'Too Soon!';
+        gameArea.style.background = '#f44336';
+        setTimeout(startGame, 1000);
+      } else {
+        score++;
+        scoreText.textContent = 'Score: ' + score;
+        startGame();
+      }
+    });
+
+    startGame();
+  </script>
+</body>
+</html>
