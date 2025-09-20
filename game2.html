@@ -8,7 +8,7 @@
 </head>
 <body>
   <header>
-    <h1>Game 2: Avoid the Box!</h1>
+    <h1>Game 2: Dodge the Falling Box!</h1>
   </header>
 
   <main>
@@ -21,49 +21,92 @@
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    let score = 0;
-    const player = {x: 140, y: 350, w: 20, h: 20};
-    let obstacle = {x: Math.random()*280, y: 0, w: 20, h: 20};
 
-    function draw() {
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+    const player = {x: 140, y: 350, w: 20, h: 20, speed: 5};
+    const obstacles = [];
+    let score = 0;
+    let gameOver = false;
+    const obstacleSpeed = 2;
+    const obstacleInterval = 90; // frames
+
+    let frame = 0;
+
+    // Handle keyboard input
+    const keys = {};
+    document.addEventListener('keydown', e => keys[e.key] = true);
+    document.addEventListener('keyup', e => keys[e.key] = false);
+
+    function drawPlayer() {
       ctx.fillStyle = 'blue';
       ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.fillStyle = 'red';
-      ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
     }
 
-    function update() {
-      obstacle.y += 3;
-      if(obstacle.y > canvas.height){
-        obstacle.y = 0;
-        obstacle.x = Math.random()*280;
-        score++;
-        document.getElementById('score').textContent = score;
+    function drawObstacles() {
+      ctx.fillStyle = 'red';
+      obstacles.forEach(obs => {
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+      });
+    }
+
+    function updatePlayer() {
+      if(keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
+      if(keys['ArrowRight'] && player.x + player.w < canvas.width) player.x += player.speed;
+    }
+
+    function updateObstacles() {
+      obstacles.forEach(obs => obs.y += obstacleSpeed);
+
+      // Remove obstacles that are off-screen
+      for(let i = obstacles.length-1; i >= 0; i--){
+        if(obstacles[i].y > canvas.height){
+          obstacles.splice(i,1);
+          score++;
+          document.getElementById('score').textContent = score;
+        }
+      }
+    }
+
+    function checkCollision() {
+      for(let obs of obstacles){
+        if(player.x < obs.x + obs.w &&
+           player.x + player.w > obs.x &&
+           player.y < obs.y + obs.h &&
+           player.y + player.h > obs.y){
+            gameOver = true;
+        }
+      }
+    }
+
+    function spawnObstacle() {
+      const obsX = Math.random() * (canvas.width - 20);
+      obstacles.push({x: obsX, y: 0, w: 20, h: 20});
+    }
+
+    function gameLoop() {
+      if(gameOver){
+        alert('Game Over! Score: ' + score);
+        window.location.reload();
+        return;
       }
 
-      // Collision
-      if(obstacle.x < player.x + player.w &&
-         obstacle.x + obstacle.w > player.x &&
-         obstacle.y < player.y + player.h &&
-         obstacle.y + obstacle.h > player.y){
-           alert('Game Over! Score: ' + score);
-           score = 0;
-           obstacle.y = 0;
-           obstacle.x = Math.random()*280;
-           document.getElementById('score').textContent = score;
-         }
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      frame++;
 
-      draw();
-      requestAnimationFrame(update);
+      if(frame % obstacleInterval === 0){
+        spawnObstacle();
+      }
+
+      updatePlayer();
+      updateObstacles();
+      checkCollision();
+
+      drawPlayer();
+      drawObstacles();
+
+      requestAnimationFrame(gameLoop);
     }
 
-    document.addEventListener('keydown', e=>{
-      if(e.key==='ArrowLeft' && player.x>0) player.x -= 20;
-      if(e.key==='ArrowRight' && player.x<canvas.width-player.w) player.x += 20;
-    });
-
-    update();
+    gameLoop();
   </script>
 </body>
 </html>
