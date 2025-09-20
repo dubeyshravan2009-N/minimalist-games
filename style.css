@@ -1,3 +1,32 @@
+/* Welcome Banner */
+.welcome-banner {
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+  color: #222;
+  padding: 30px 20px;
+  border-radius: 20px;
+  margin: 20px auto;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.welcome-banner h2 {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+}
+.welcome-banner h3 {
+  font-size: 1.5rem;
+  margin: 15px 0 10px;
+}
+.welcome-banner p, .welcome-banner li {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.welcome-banner ol {
+  text-align: left;
+  display: inline-block;
+  margin-top: 10px;
+}
+
 /* General Reset */
 * {
   margin: 0;
