@@ -8,6 +8,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <audio id="welcomeAudio" src="welcome.mp3"></audio>
+<script>
+document.body.addEventListener('click', () => {
+  const audio = document.getElementById('welcomeAudio');
+  audio.play();
+}, { once: true });
+</script>
+
   <header>
     <h1>🎮 Minimalist Games</h1>
     <p>Simple. Fun. Addictive. Play on Desktop or Mobile!</p>
@@ -66,5 +74,18 @@
   <footer>
     <p>© 2025 Minimalist Games by Shravan Dubey</p>
   </footer>
+  <script>
+window.addEventListener('load', () => {
+  const audio = document.getElementById('welcomeAudio');
+  // Play audio after a short delay for smooth loading
+  setTimeout(() => {
+    audio.play().catch(err => {
+      // Catch autoplay restrictions (mobile browsers require interaction)
+      console.log('Audio autoplay prevented. Tap anywhere to play.');
+    });
+  }, 500);
+});
+</script>
+
 </body>
 </html>
