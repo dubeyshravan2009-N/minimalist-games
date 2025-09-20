@@ -3,23 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Game 2 - Minimalist Games</title>
+  <title>Game 2 - Hill Racer</title>
   <link rel="stylesheet" href="style.css">
   <style>
     canvas {
       border: 1px solid #333;
       touch-action: none; /* prevent scrolling on mobile */
     }
+    body { text-align:center; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Game 2: Dodge the Box!</h1>
+    <h1>Game 2: Hill Racer!</h1>
   </header>
 
   <main>
     <canvas id="gameCanvas" width="300" height="400"></canvas>
-    <p>Score: <span id="score">0</span></p>
+    <p>Distance: <span id="score">0</span> m</p>
     <br>
     <a href="index.html">← Back to Home</a>
   </main>
@@ -28,63 +29,85 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const player = {x: 140, y: 350, w: 20, h: 20};
-    let obstacle = {x: Math.random() * 280, y: 0, w: 20, h: 20};
-    let score = 0;
-    const speed = 3;
+    const car = {x: 140, y: 350, w: 20, h: 40, speed: 0};
+    let hills = [];
+    let distance = 0;
+
+    // Generate hills
+    function generateHill() {
+      const hillWidth = 50 + Math.random() * 100;
+      const hillHeight = 20 + Math.random() * 50;
+      const hillX = Math.random() * (canvas.width - hillWidth);
+      hills.push({x: hillX, y: -hillHeight, w: hillWidth, h: hillHeight});
+    }
 
     // Draw everything
     function draw() {
       ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Draw hills
+      ctx.fillStyle = 'green';
+      hills.forEach(hill => {
+        ctx.fillRect(hill.x, hill.y, hill.w, hill.h);
+      });
+
+      // Draw car
       ctx.fillStyle = 'blue';
-      ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.fillStyle = 'red';
-      ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+      ctx.fillRect(car.x, car.y, car.w, car.h);
     }
 
-    // Update game state
+    // Update positions
     function update() {
-      obstacle.y += speed;
+      distance += 0.5;
+      document.getElementById('score').textContent = Math.floor(distance);
+
+      // Move hills down
+      hills.forEach(hill => hill.y += 3);
+
+      // Remove off-screen hills
+      hills = hills.filter(hill => hill.y < canvas.height);
+
+      // Occasionally generate new hill
+      if(Math.random() < 0.03) generateHill();
 
       // Collision detection
-      if(player.x < obstacle.x + obstacle.w &&
-         player.x + player.w > obstacle.x &&
-         player.y < obstacle.y + obstacle.h &&
-         player.y + player.h > obstacle.y){
-          alert('Game Over! Score: ' + score);
-          window.location.reload();
-      }
-
-      // Obstacle reset
-      if(obstacle.y > canvas.height){
-        obstacle.y = 0;
-        obstacle.x = Math.random() * (canvas.width - obstacle.w);
-        score++;
-        document.getElementById('score').textContent = score;
+      for(let hill of hills){
+        if(car.x < hill.x + hill.w &&
+           car.x + car.w > hill.x &&
+           car.y < hill.y + hill.h &&
+           car.y + car.h > hill.y){
+             alert('Game Over! Distance: ' + Math.floor(distance) + ' m');
+             window.location.reload();
+           }
       }
     }
 
-    // Desktop keyboard controls
-    document.addEventListener('keydown', e => {
-      if(e.key === 'ArrowLeft' && player.x > 0) player.x -= 15;
-      if(e.key === 'ArrowRight' && player.x + player.w < canvas.width) player.x += 15;
-    });
+    // Controls
+    const keys = {};
+    document.addEventListener('keydown', e => keys[e.key] = true);
+    document.addEventListener('keyup', e => keys[e.key] = false);
+
+    function handleControls() {
+      if(keys['ArrowLeft'] && car.x > 0) car.x -= 5;
+      if(keys['ArrowRight'] && car.x + car.w < canvas.width) car.x += 5;
+    }
 
     // Mobile touch controls
     canvas.addEventListener('touchstart', e => {
       const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
-      if(touchX < canvas.width/2 && player.x > 0) player.x -= 15;  // left side
-      if(touchX >= canvas.width/2 && player.x + player.w < canvas.width) player.x += 15; // right side
+      if(touchX < canvas.width/2 && car.x > 0) car.x -= 10;
+      if(touchX >= canvas.width/2 && car.x + car.w < canvas.width) car.x += 10;
     });
 
     canvas.addEventListener('touchmove', e => {
       const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
-      if(touchX < canvas.width/2 && player.x > 0) player.x -= 15;
-      if(touchX >= canvas.width/2 && player.x + player.w < canvas.width) player.x += 15;
+      if(touchX < canvas.width/2 && car.x > 0) car.x -= 10;
+      if(touchX >= canvas.width/2 && car.x + car.w < canvas.width) car.x += 10;
       e.preventDefault();
     });
 
     function gameLoop() {
+      handleControls();
       update();
       draw();
       requestAnimationFrame(gameLoop);
