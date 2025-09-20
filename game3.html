@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game 3 - Memory Match</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #board {
+      display: grid;
+      grid-template-columns: repeat(4, 70px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin: 40px auto;
+    }
+    .card {
+      width: 70px;
+      height: 70px;
+      background-color: #1e1e2f;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.3s;
+    }
+    .flipped {
+      background-color: #4CAF50;
+    }
+    .matched {
+      background-color: #ccc;
+      color: #fff;
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Game 3: Memory Match!</h1>
+  </header>
+
+  <main>
+    <div id="board"></div>
+    <p>Moves: <span id="moves">0</span></p>
+    <br>
+    <a href="index.html">← Back to Home</a>
+  </main>
+
+  <script>
+    const board = document.getElementById('board');
+    const movesEl = document.getElementById('moves');
+    let moves = 0;
+
+    const symbols = ['🍎','🍌','🍇','🍒','🍋','🥝','🍉','🍑'];
+    let cards = [...symbols, ...symbols];
+    cards.sort(() => Math.random() - 0.5);
+
+    let flipped = [];
+    let matched = [];
+
+    function renderBoard() {
+      board.innerHTML = '';
+      cards.forEach((symbol, index)=>{
+        const div = document.createElement('div');
+        div.className = 'card';
+        if(matched.includes(index)){
+          div.classList.add('matched');
+          div.textContent = symbol;
+        } else if(flipped.includes(index)){
+          div.classList.add('flipped');
+          div.textContent = symbol;
+        }
+        div.addEventListener('click', ()=> flipCard(index));
+        board.appendChild(div);
+      });
+    }
+
+    function flipCard(index){
+      if(flipped.includes(index) || matched.includes(index)) return;
+      flipped.push(index);
+      renderBoard();
+
+      if(flipped.length === 2){
+        moves++;
+        movesEl.textContent = moves;
+        const [a,b] = flipped;
+        if(cards[a] === cards[b]){
+          matched.push(a,b);
+          flipped = [];
+          if(matched.length === cards.length){
+            setTimeout(()=> {
+              alert('Congratulations! You completed in '+moves+' moves.');
+              moves = 0;
+              matched = [];
+              flipped = [];
+              cards.sort(() => Math.random() - 0.5);
+              renderBoard();
+            }, 300);
+          }
+        } else {
+          setTimeout(()=>{
+            flipped = [];
+            renderBoard();
+          }, 800);
+        }
+      }
+    }
+
+    renderBoard();
+  </script>
+</body>
+</html>
