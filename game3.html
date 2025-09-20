@@ -6,6 +6,7 @@
   <title>Game 3 - Memory Match</title>
   <link rel="stylesheet" href="style.css">
   <style>
+    body { text-align: center; }
     #board {
       display: grid;
       grid-template-columns: repeat(4, 70px);
@@ -61,52 +62,61 @@
     let flipped = [];
     let matched = [];
 
+    // Render the board
     function renderBoard() {
       board.innerHTML = '';
-      cards.forEach((symbol, index)=>{
-        const div = document.createElement('div');
-        div.className = 'card';
-        if(matched.includes(index)){
-          div.classList.add('matched');
-          div.textContent = symbol;
-        } else if(flipped.includes(index)){
-          div.classList.add('flipped');
-          div.textContent = symbol;
+      for (let i = 0; i < cards.length; i++) {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card';
+        if (matched.includes(i)) {
+          cardDiv.classList.add('matched');
+          cardDiv.textContent = cards[i];
+        } else if (flipped.includes(i)) {
+          cardDiv.classList.add('flipped');
+          cardDiv.textContent = cards[i];
         }
-        div.addEventListener('click', ()=> flipCard(index));
-        board.appendChild(div);
-      });
+        cardDiv.addEventListener('click', () => flipCard(i));
+        board.appendChild(cardDiv);
+      }
     }
 
-    function flipCard(index){
-      if(flipped.includes(index) || matched.includes(index)) return;
+    // Handle card flip
+    function flipCard(index) {
+      if (flipped.includes(index) || matched.includes(index)) return;
+
       flipped.push(index);
       renderBoard();
 
-      if(flipped.length === 2){
+      if (flipped.length === 2) {
         moves++;
         movesEl.textContent = moves;
-        const [a,b] = flipped;
-        if(cards[a] === cards[b]){
-          matched.push(a,b);
+        const [a, b] = flipped;
+        if (cards[a] === cards[b]) {
+          matched.push(a, b);
           flipped = [];
-          if(matched.length === cards.length){
-            setTimeout(()=> {
-              alert('Congratulations! You completed in '+moves+' moves.');
-              moves = 0;
-              matched = [];
-              flipped = [];
-              cards.sort(() => Math.random() - 0.5);
-              renderBoard();
+          if (matched.length === cards.length) {
+            setTimeout(() => {
+              alert('Congratulations! You solved the puzzle in ' + moves + ' moves.');
+              resetGame();
             }, 300);
           }
         } else {
-          setTimeout(()=>{
+          setTimeout(() => {
             flipped = [];
             renderBoard();
           }, 800);
         }
       }
+    }
+
+    // Reset game
+    function resetGame() {
+      moves = 0;
+      movesEl.textContent = moves;
+      matched = [];
+      flipped = [];
+      cards.sort(() => Math.random() - 0.5);
+      renderBoard();
     }
 
     renderBoard();
