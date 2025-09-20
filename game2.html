@@ -5,10 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game 2 - Minimalist Games</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    canvas {
+      border: 1px solid #333;
+      touch-action: none; /* prevent scrolling on mobile */
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>Game 2: Dodge the Falling Box!</h1>
+    <h1>Game 2: Dodge the Box!</h1>
   </header>
 
   <main>
@@ -22,87 +28,65 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const player = {x: 140, y: 350, w: 20, h: 20, speed: 5};
-    const obstacles = [];
+    const player = {x: 140, y: 350, w: 20, h: 20};
+    let obstacle = {x: Math.random() * 280, y: 0, w: 20, h: 20};
     let score = 0;
-    let gameOver = false;
-    const obstacleSpeed = 2;
-    const obstacleInterval = 90; // frames
+    const speed = 3;
 
-    let frame = 0;
-
-    // Handle keyboard input
-    const keys = {};
-    document.addEventListener('keydown', e => keys[e.key] = true);
-    document.addEventListener('keyup', e => keys[e.key] = false);
-
-    function drawPlayer() {
+    // Draw everything
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
       ctx.fillStyle = 'blue';
       ctx.fillRect(player.x, player.y, player.w, player.h);
-    }
-
-    function drawObstacles() {
       ctx.fillStyle = 'red';
-      obstacles.forEach(obs => {
-        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-      });
+      ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
     }
 
-    function updatePlayer() {
-      if(keys['ArrowLeft'] && player.x > 0) player.x -= player.speed;
-      if(keys['ArrowRight'] && player.x + player.w < canvas.width) player.x += player.speed;
-    }
+    // Update game state
+    function update() {
+      obstacle.y += speed;
 
-    function updateObstacles() {
-      obstacles.forEach(obs => obs.y += obstacleSpeed);
+      // Collision detection
+      if(player.x < obstacle.x + obstacle.w &&
+         player.x + player.w > obstacle.x &&
+         player.y < obstacle.y + obstacle.h &&
+         player.y + player.h > obstacle.y){
+          alert('Game Over! Score: ' + score);
+          window.location.reload();
+      }
 
-      // Remove obstacles that are off-screen
-      for(let i = obstacles.length-1; i >= 0; i--){
-        if(obstacles[i].y > canvas.height){
-          obstacles.splice(i,1);
-          score++;
-          document.getElementById('score').textContent = score;
-        }
+      // Obstacle reset
+      if(obstacle.y > canvas.height){
+        obstacle.y = 0;
+        obstacle.x = Math.random() * (canvas.width - obstacle.w);
+        score++;
+        document.getElementById('score').textContent = score;
       }
     }
 
-    function checkCollision() {
-      for(let obs of obstacles){
-        if(player.x < obs.x + obs.w &&
-           player.x + player.w > obs.x &&
-           player.y < obs.y + obs.h &&
-           player.y + player.h > obs.y){
-            gameOver = true;
-        }
-      }
-    }
+    // Desktop keyboard controls
+    document.addEventListener('keydown', e => {
+      if(e.key === 'ArrowLeft' && player.x > 0) player.x -= 15;
+      if(e.key === 'ArrowRight' && player.x + player.w < canvas.width) player.x += 15;
+    });
 
-    function spawnObstacle() {
-      const obsX = Math.random() * (canvas.width - 20);
-      obstacles.push({x: obsX, y: 0, w: 20, h: 20});
-    }
+    // Mobile touch controls
+    canvas.addEventListener('touchstart', e => {
+      const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+      if(touchX < canvas.width/2 && player.x > 0) player.x -= 15;  // left side
+      if(touchX >= canvas.width/2 && player.x + player.w < canvas.width) player.x += 15; // right side
+    });
+
+    canvas.addEventListener('touchmove', e => {
+      const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
+      if(touchX < canvas.width/2 && player.x > 0) player.x -= 15;
+      if(touchX >= canvas.width/2 && player.x + player.w < canvas.width) player.x += 15;
+      e.preventDefault();
+    });
 
     function gameLoop() {
-      if(gameOver){
-        alert('Game Over! Score: ' + score);
-        window.location.reload();
-        return;
-      }
-
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      frame++;
-
-      if(frame % obstacleInterval === 0){
-        spawnObstacle();
-      }
-
-      updatePlayer();
-      updateObstacles();
-      checkCollision();
-
-      drawPlayer();
-      drawObstacles();
-
+      update();
+      draw();
       requestAnimationFrame(gameLoop);
     }
 
