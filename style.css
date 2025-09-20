@@ -71,3 +71,24 @@ footer {
   color: #ccc;
   font-size: 0.9rem;
 }
+
+/* Game Pages */
+button {
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  background-color: #1e1e2f;
+  color: white;
+  margin-top: 50px;
+  transition: background-color 0.3s;
+}
+button:hover {
+  background-color: #33334d;
+}
+
+canvas {
+  border: 1px solid #333;
+  margin-top: 20px;
+}
