@@ -3,118 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game 6 - Enemy Shooter</title>
+<title>Game 7 - Water Color Sort</title>
 <link rel="stylesheet" href="style.css">
 <style>
-body { text-align: center; margin:0; font-family: 'Inter', sans-serif; background:#222; color:white; }
-canvas { background:#111; margin-top:20px; border-radius:10px; }
-#scoreText { font-size:1.5rem; margin-top:10px; }
-.home-link { display:inline-block; margin-top:10px; font-size:1.2rem; color:white; text-decoration:none; transition:0.3s; }
-.home-link:hover { color:#2575fc; }
+body {
+  font-family: 'Inter', sans-serif;
+  text-align:center;
+  background:#f0f2f5;
+}
+h1 {
+  margin-top: 20px;
+  color: #222;
+}
+#gameArea {
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top: 30px;
+  gap: 15px;
+}
+.tube {
+  width:50px;
+  height:150px;
+  border:2px solid #555;
+  border-radius:10px;
+  background:#ccc;
+  display:flex;
+  flex-direction:column-reverse;
+  cursor:pointer;
+  padding:5px;
+}
+.colorBlock {
+  height:35px;
+  margin:2px 0;
+  border-radius:5px;
+}
+button.home-link {
+  margin-top:20px;
+  padding:10px 20px;
+  border:none;
+  border-radius:10px;
+  background:#2575fc;
+  color:white;
+  font-size:1rem;
+  cursor:pointer;
+  transition:0.3s;
+}
+button.home-link:hover {
+  background:#1e5ed1;
+}
 </style>
 </head>
 <body>
-<header>
-<h1>Game 6: Enemy Shooter!</h1>
-</header>
-<main>
-<canvas id="gameCanvas" width="350" height="500"></canvas>
-<p id="scoreText">Score: 0</p>
-<a href="index.html" class="home-link">🏠</a>
-</main>
+<h1>Game 7: Water Color Sort</h1>
+<div id="gameArea"></div>
+<button class="home-link" onclick="window.location.href='index.html'">🏠 Back to Home</button>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const colors = ["red","blue","green","yellow"];
+let tubes = [];
+let selectedTube = null;
 
-const player = { x: 160, y: 450, w: 30, h: 30, speed:5, color:'blue' };
-let bullets = [];
-let enemies = [];
-let score = 0;
-let frame = 0;
-
-// Controls
-const keys = {};
-document.addEventListener('keydown', e=>keys[e.key]=true);
-document.addEventListener('keyup', e=>keys[e.key]=false);
-
-// Shooting bullets
-function shoot(){
-  bullets.push({x:player.x+player.w/2-2, y:player.y, w:4, h:10, color:'yellow'});
+// Initialize tubes
+function initGame(){
+  tubes = [
+    ["red","blue","green","yellow"],
+    ["yellow","green","blue","red"],
+    [],
+    []
+  ];
+  renderTubes();
 }
 
-// Generate enemies
-function generateEnemy(){
-  const x = Math.random()*(canvas.width-30);
-  enemies.push({x:x, y:-30, w:30, h:30, color:'red'});
-}
-
-// Update game objects
-function update(){
-  // Move player
-  if(keys['ArrowLeft'] && player.x>0) player.x -= player.speed;
-  if(keys['ArrowRight'] && player.x+player.w<canvas.width) player.x += player.speed;
-  if(keys[' '] || keys['Spacebar']) shoot();
-
-  // Move bullets
-  bullets.forEach(b=>b.y -=7);
-
-  // Move enemies
-  enemies.forEach(e=>e.y +=3);
-
-  // Bullet-Enemy collisions
-  bullets.forEach((b,i)=>{
-    enemies.forEach((e,j)=>{
-      if(b.x<b.x+e.w && b.x+b.w>e.x && b.y<b.y+e.h && b.y+b.h>e.y){
-        bullets.splice(i,1);
-        enemies.splice(j,1);
-        score++;
-        document.getElementById('scoreText').textContent = 'Score: '+score;
-      }
+// Render tubes
+function renderTubes(){
+  const gameArea = document.getElementById("gameArea");
+  gameArea.innerHTML = "";
+  tubes.forEach((tube,index)=>{
+    const tubeDiv = document.createElement("div");
+    tubeDiv.classList.add("tube");
+    tubeDiv.dataset.index = index;
+    tube.forEach(color=>{
+      const block = document.createElement("div");
+      block.classList.add("colorBlock");
+      block.style.background=color;
+      tubeDiv.appendChild(block);
     });
+    tubeDiv.addEventListener("click",()=>selectTube(index));
+    gameArea.appendChild(tubeDiv);
   });
+}
 
-  // Remove offscreen bullets
-  bullets = bullets.filter(b=>b.y>0);
-  // Check if enemy reaches bottom
-  enemies.forEach(e=>{
-    if(e.y+e.h >= canvas.height){
-      alert('Game Over! Score: '+score);
-      window.location.reload();
+// Select and pour colors
+function selectTube(index){
+  if(selectedTube === null){
+    if(tubes[index].length === 0) return;
+    selectedTube = index;
+    highlightTube(index);
+  } else {
+    if(selectedTube === index){
+      selectedTube = null;
+      renderTubes();
+      return;
     }
-  });
-
-  // Spawn enemies periodically
-  frame++;
-  if(frame%60===0) generateEnemy();
+    pourColor(selectedTube,index);
+    selectedTube = null;
+    renderTubes();
+    checkWin();
+  }
 }
 
-// Draw everything
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  // Player
-  ctx.fillStyle=player.color;
-  ctx.fillRect(player.x,player.y,player.w,player.h);
-  // Bullets
-  bullets.forEach(b=>{
-    ctx.fillStyle=b.color;
-    ctx.fillRect(b.x,b.y,b.w,b.h);
-  });
-  // Enemies
-  enemies.forEach(e=>{
-    ctx.fillStyle=e.color;
-    ctx.fillRect(e.x,e.y,e.w,e.h);
+// Highlight selected tube
+function highlightTube(index){
+  const gameArea = document.getElementById("gameArea");
+  gameArea.querySelectorAll(".tube").forEach((tubeDiv,i)=>{
+    tubeDiv.style.borderColor = (i===index) ? "#2575fc":"#555";
   });
 }
 
-// Game loop
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
+// Pour color logic
+function pourColor(from,to){
+  if(tubes[from].length===0) return;
+  if(tubes[to].length===4) return;
+  if(tubes[to].length===0 || tubes[from][tubes[from].length-1]===tubes[to][tubes[to].length-1]){
+    tubes[to].push(tubes[from].pop());
+  }
 }
 
-loop();
+// Check win
+function checkWin(){
+  let won = tubes.every(tube => tube.length===0 || tube.every(c=>c===tube[0]));
+  if(won){
+    setTimeout(()=>alert("🎉 You Win!"),100);
+  }
+}
+
+initGame();
 </script>
 </body>
 </html>
